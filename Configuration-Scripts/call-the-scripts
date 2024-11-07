@@ -1,1 +1,25 @@
 #!/bin/bash
+
+user=""
+
+while getopts "im:" opt; do
+	case "${opt}" in
+
+	i)
+		./install-Userdef-script
+		;;
+	m)
+		user=${OPTARG}
+		./make-symlink-script $user
+		;;
+	:)
+		echo "Error: run -m with an argument"
+		exit 1
+		;;
+	?)
+		#what does this do?
+		echo "Error: that flag does not exist"
+		exit 1
+		;;
+	esac
+done

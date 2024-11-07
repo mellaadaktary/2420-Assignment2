@@ -1,14 +1,15 @@
 #!/bin/bash
 
 
+#now it only catches those two and also creates them a directory up
 #dosent catch kakrc and tmux.conf
 #This script clones the confirguration files
 
 
-fullpath=( /home/$1/config-files/*/* )
+fullpath=( /home/$1/config-files/*/*/* )
 
 if [[ -z $1 ]]; then
-	echo "run script with condition"
+	echo "error: run script with condition"
 exit 1
 fi
 
@@ -28,11 +29,11 @@ fi
 for i in ${fullpath[@]}; do
 	echo "$i"
 	if [[ $i == /home/$1/config-files/bin/* ]]; then
-		ln -s $i /home/$1/bin/$(basename $i)
+		ln -s $i /home/$1/testing/bin/$(basename $i)
 	elif [[ $i == /home/$1/config-files/config/* ]]; then
-		ln -s $i /home/$1/.config/$(basename $i)
+		ln -s $i /home/$1/testing/.config/$(basename $i)
 	elif [[ $i == /home/$1/config-files/home/* ]]; then
-		ln -s $i /home/$1/.$(basename $i)
+		ln -s $i /home/$1/testing/.$(basename $i)
 	else
 		echo "error: $i dosent meet any matches"
 	fi
