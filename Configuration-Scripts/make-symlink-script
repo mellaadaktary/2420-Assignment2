@@ -1,0 +1,50 @@
+#!/bin/bash
+
+
+
+#This script clones the confirguration files
+
+
+#an if statement that checks if config-files dir exists
+if [[ -d ~/config-files ]]; then
+	#clones the git repo to the config-files dir
+	git clone https://gitlab.com/cit2420/2420-as2-starting-files.git ~/config-files
+else
+	#make the directory when it dosent exist then run git clone in the directory
+	mkdir ~/config-files
+	git clone https://gitlab.com/cit2420/2420-as2-starting-files.git ~/config-files
+fi
+
+
+fullpath=( ~/config-files/*/* )
+
+for i in ${fullpath[@]}; do
+	echo "$i"
+	if [[ $i == ~/config-files/bin/* ]]; then
+		ln -s $i ~/testing/bin/$(basename $i)
+	elif [[ $i == ~/config-files/config/* ]]; then
+		ln -s $i ~/testing/.config/$(basename $i)
+	elif [[ $i == ~/config-files/home/* ]]; then
+		ln -s $i ~/testing/.$(basename $i)
+	else
+		echo "error: $i dosent meet any matches"
+	fi
+done
+
+
+#creating the bin directory symlink
+#if [[ -d ~/config-files/bin ]]; then
+#	ln -s ~/config-files/bin/sayhi ~/bin/sayhi
+#fi
+#
+#creating the .config symlink
+#if [[ -d ~/config-files/config ]]; then
+#	ln -s ~/config-files/config ~/.configbruh
+#fi
+#
+#creating bashrc symlink
+#if [[ -d ~/config-files/home ]]; then
+#	ln -s ~/config-files/home/bashrc ~/.bashrcbruh
+#fi
+
+

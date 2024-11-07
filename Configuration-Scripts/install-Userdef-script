@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# if i delete packages and try to install it asks for root privilages
+#does it matter if we give an option for user to say yes or no for installing packages
+#should I say what my script does at the top?
+#should i check if the package is incorrect what type of error check
+
+#empty array named package
+package=()
+#command substitution which gives us the content of Userdef-packages and stores it into readthefile
+readthefile=$(cat ./Userdef-packages)
+#adds the readthefile to the empty array so we can loop through it. https://ioflood.com/blog/bash-append-to-array/
+package+=$readthefile
+
+
+#looping through the array named packages getting every iter as i
+for i in ${package[@]}; do
+	#pacman -Q shows us the installed packages and we are trying to get the iter in the command substitution if it returns true then tell them its installed https://www.atlantic.net/dedicated-server-hosting/list-installed-packages-with-pacman-on-arch-linux/
+	if [[ $(pacman -Q | grep $i) ]]; then
+		echo "$i is already installed"
+	#otherwise install the package
+	else
+		# install the package
+		pacman -S $i
+	fi
+done
+
+
