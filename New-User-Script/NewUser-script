@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#take the uid of the last user and increment by 1
+#make that the new guid also and add it to /etc/group
+#specify the home directory and the shell in /etc/passwd
+# whats realname?
+# create user new password using passwd
+# copy contents of /etc/skel into home directory
+
+highestuserid=$(awk --field-separator ":" '{print $3}' /etc/passwd | sort -nr | grep -E '\b[0-9]{4}\b' | head -n 1)
+
+newUid+=$(($highestuserid + 1))
+newGuid+=$newUid
+
+
+
