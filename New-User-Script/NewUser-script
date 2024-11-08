@@ -1,16 +1,63 @@
 #!/bin/bash
 
 #take the uid of the last user and increment by 1
-#make that the new guid also and add it to /etc/group
 #specify the home directory and the shell in /etc/passwd
-# whats realname?
-# create user new password using passwd
+#make that the new guid also and add it to /etc/group
 # copy contents of /etc/skel into home directory
+# create user new password using passwd
+
+
+#Do i need to make new groups that they specify or add them to specified groups?
+#how robust is the error handling supposed tobe
+#are we supposed to include instructions in the scripts or on readme
+
+
+
 
 highestuserid=$(awk --field-separator ":" '{print $3}' /etc/passwd | sort -nr | grep -E '\b[0-9]{4}\b' | head -n 1)
 
-newUid+=$(($highestuserid + 1))
-newGuid+=$newUid
+newUid=$(($highestuserid + 1))
+newGuid=$newUid
+name=""
+
+while getopts ":u:g:s:" opt; do
+	case "${opt}" in
+	u)
+		name=${OPTARG}
+		echo "$name"
+		;;
+	g)
+		groups=( ${OPTARG} )
+		echo "${groups}"
+		;;
+
+	s)
+		echo "i"
+		specifiedshell=${OPTARG}
+		echo "$specifiedshell"
+		;;
+		
+	:)
+		echo "Error: requires an argument"
+		exit 1
+		;;
+	esac
+done
+
+if [[ -n $name && -n $specifiedshell ]]; then
+	# mkdir -p /home/$name
+	# echo "$name:x:$newUid:$newGuid:/home/$name:/bin/$specifiedshell" >> /etc/passwd
+	# echo "$name:x:$newGuid:" >> /etc/group
+	# cp -a /etc/skel/. /home/$name
+	# chown $name:$name /home/$name
+#	for i in ${groups[@]}; do
+#		echo "$i"
+fi
+	
+
+
+
+
 
 
 
