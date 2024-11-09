@@ -3,15 +3,24 @@
 
 #now it only catches those two and also creates them a directory up
 #dosent catch kakrc and tmux.conf
-#This script clones the confirguration files
+#This script clones the confirguration files make sure the user includes git
 
+fullpath=( /home/$1/config-files/*/* )
 
-fullpath=( /home/$1/config-files/*/*/* )
+# give path instead of array
 
 if [[ -z $1 ]]; then
-	echo "error: run script with condition"
+	echo "error: run this script with your username"
 exit 1
 fi
+
+
+
+if [[ ! $(pacman -Q | grep git) ]]; then
+	echo "git is needed to run this script"
+exit 1
+fi
+
 
 
 #an if statement that checks if config-files dir exists
@@ -22,18 +31,30 @@ else
 	#make the directory when it dosent exist then run git clone in the directory
 	mkdir /home/$1/config-files
 	git clone https://gitlab.com/cit2420/2420-as2-starting-files.git /home/$1/config-files
+	echo "config-files created and repo has been cloned to it"
 fi
 
+
+if [[ ! -d /home/$1/bin ]]; then
+	mkdir /home/$1/bin
+	echo "made a bin directory"
+fi
+
+
+if [[ ! -d /home/$1/.config ]]; then
+	mkdir /home/$1/.config
+	echo "made a .config directory"
+fi
 
 
 for i in ${fullpath[@]}; do
 	echo "$i"
 	if [[ $i == /home/$1/config-files/bin/* ]]; then
-		ln -s $i /home/$1/testing/bin/$(basename $i)
-	elif [[ $i == /home/$1/config-files/config/* ]]; then
-		ln -s $i /home/$1/testing/.config/$(basename $i)
+		ln -s $i /home/$1/bin/$(basename $i)
 	elif [[ $i == /home/$1/config-files/home/* ]]; then
-		ln -s $i /home/$1/testing/.$(basename $i)
+		ln -sf $i /home/$1/.$(basename $i)
+	elif [[ $i == /home/$1/config-files/config/* ]]; then
+		ln -s $i /home/$1/.config/$(basename $i)
 	else
 		echo "error: $i dosent meet any matches"
 	fi
