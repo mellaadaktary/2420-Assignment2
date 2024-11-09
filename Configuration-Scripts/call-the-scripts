@@ -1,15 +1,24 @@
 #!/bin/bash
 
+
+#This script is used to run the other two scripts in this directory
+
+#this is a variable user which is an empty string and which the name of the user will be stored to
 user=""
+
 
 while getopts "im:" opt; do
 	case "${opt}" in
-
+#This is the flag -i and when this flag is called then the install-Userdef-script will run the ./ represents the script in the same directory as the two other scripts should not be in a different directory
 	i)
 		./install-Userdef-script
+		#these double ;; mark the end of where this flag ends
 		;;
+# this is the -m flag when this flag is called we store the argument which is required for this script in user as it should be theusername which is rquired to run the symlink script
 	m)
+	#defining the user up there to the optarg here
 		user=${OPTARG}
+		#running the script with the argument it requires
 		./make-symlink-script $user
 		;;
 	:)
