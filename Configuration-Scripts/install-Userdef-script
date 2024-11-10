@@ -1,23 +1,24 @@
 #!/bin/bash
 
-# if i delete packages and try to install it asks for root privilages
-#does it matter if we give an option for user to say yes or no for installing packages
-#should I say what my script does at the top?
-#should i check if the package is incorrect what type of error check
+#this script takes the file Userdef-packages and installs all the packages listed inside
 
 #empty array named package
 package=()
-#command substitution which gives us the content of Userdef-packages and stores it into readthefile
+
+#command substitution which gives us the content of Userdef-packages and stores it into readthefile more than 3 case
 readthefile=$(cat ./Userdef-packages)
+
 #adds the readthefile to the empty array so we can loop through it. https://ioflood.com/blog/bash-append-to-array/
 package+=$readthefile
 
 
-#looping through the array named packages getting every iter as i
+#this for loop loops through package which holds all the packages to be installing, we iterate through it with the @ inside the square brackets
 for i in ${package[@]}; do
-	#pacman -Q shows us the installed packages and we are trying to get the iter in the command substitution if it returns true then tell them its installed https://www.atlantic.net/dedicated-server-hosting/list-installed-packages-with-pacman-on-arch-linux/
+
+	#pacman -Q is a command which shows us the installed packages we pipe it into a grep and pull out the keyword which is the iterate in this case, this is all in a command substitution which gives us result and if it returns something then the double sqaure brackets will either return true or false https://www.atlantic.net/dedicated-server-hosting/list-installed-packages-with-pacman-on-arch-linux/
 	if [[ $(pacman -Q | grep $i) ]]; then
 		echo "$i is already installed"
+
 	#otherwise install the package
 	else
 		# install the package
