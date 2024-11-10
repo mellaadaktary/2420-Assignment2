@@ -48,19 +48,22 @@ while getopts ":u:g:s:" opt; do
 done
 
 if [[ -n $name && -n $specifiedshell ]]; then
-	mkdir -p /home/$name
-	echo "$name:x:$newUid:$newGuid:/home/$name:/bin/$specifiedshell" >> /etc/passwd
+	
+	echo "$name:x:$newUid:$newGuid:$name:/home/$name:/bin/$specifiedshell" >> /etc/passwd
 	echo "$name:x:$newGuid:" >> /etc/group
+	mkdir -p /home/$name
 	cp -r /etc/skel/. /home/$name
 	chown $name:$name /home/$name
-	passwd "$name"
+	echo "$name:!*:::::::" >> /etc/shadow
+	
 fi
 #	for i in ${groups[@]}; do
 #		echo "$i"
-#fi
+#		
+#passwd $name
 	
 
-
+passwd $name
 
 
 
