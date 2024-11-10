@@ -21,10 +21,12 @@ while getopts "im:" opt; do
 		#running the script with the argument it requires
 		./make-symlink-script $user
 		;;
+# this is a case statement match that runs when a flag that expects an argument is run without one then this will run and exit 1 which means the script will stop and terminate
 	:)
 		echo "Error: run -m with an argument"
 		exit 1
 		;;
+# this is a placeholder for any other single letter so if a flag which isnt an option hers run here then this option will run and the script will terminate
 	?)
 		#what does this do?
 		echo "Error: that flag does not exist"
