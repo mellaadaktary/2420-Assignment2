@@ -3,8 +3,6 @@
 
 #This script is used to run the other two scripts in this directory
 
-#this is a variable user which is an empty string and which the name of the user will be stored to
-user=""
 
 #EUID is effective user id and changes to the root users when sudo is run. if the command is run without sudo the uid which is not equal to 0 then echo error and exit 1
 #https://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
