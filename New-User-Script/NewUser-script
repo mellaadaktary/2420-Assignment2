@@ -3,7 +3,7 @@
 
 if [[ "$EUID" -ne 0 ]]; then
 	echo "Error: run script with sudo"
-	exit1
+	exit 1
 fi
 
 
@@ -13,6 +13,8 @@ newUid=$(($highestuserid + 1))
 newGuid=$newUid
 name=""
 specifiedshell="/bin/bash"
+
+
 
 while getopts "u:g:s:" opt; do
 	case "${opt}" in
@@ -25,7 +27,6 @@ while getopts "u:g:s:" opt; do
 
 	s)
 		specifiedshell=${OPTARG}
-		echo "$specifiedshell"
 		;;
 		
 	:)
@@ -33,11 +34,45 @@ while getopts "u:g:s:" opt; do
 		exit 1
 		;;
 	?)
-		echo "Error: this option does not exist"
+		echo "Error: this option does not exist
+		-u <username> (example: -u arch)
+		-g <"groups"> (example: -g 'wheel adm group3')
+		-s shell (example: -s /bin/bash) 
+		"
 		exit 1
 		;;
 	esac
 done
+
+if [[ $(cat /etc/passwd | grep $name) ]]; then
+	echo "Error: This user already exists please provide a unique user"
+	exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+	echo "Error: no options or arguments were passed
+        -u <username> (example: -u arch)
+        -g <"groups"> (example: -g 'wheel adm group3')
+        -s shell (example: -s /bin/bash)"
+	exit 1
+fi
+
+
+
+if [[ ! $(cat /etc/shells | grep $specifiedshell) ]]; then
+	echo "this shell cannot be set it is not in the /etc/shells file to set your shell to $specifiedshell download it first"
+	exit 1
+fi
+
+
+for i in ${groups[@]}; do
+	if [[ ! $(cat /etc/group | grep $i) ]]; then
+		echo "Error: one of these groups dont exist run the script again with existing groups"
+	exit 1
+	fi
+done
+
+
 
 if [[ -n $name && -n $specifiedshell ]]; then
 	
@@ -60,6 +95,9 @@ if [[ -n $name && -n $specifiedshell ]]; then
 		fi
 	done	
 passwd $name
+echo "successful: User $name is created"
+else
+	echo "Error: provide a username and specifiedshell"
 fi
 
 
