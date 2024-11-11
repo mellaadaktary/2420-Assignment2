@@ -24,11 +24,9 @@ while getopts ":u:g:s:" opt; do
 	case "${opt}" in
 	u)
 		name=${OPTARG}
-		echo "$name"
 		;;
 	g)
 		groups=( ${OPTARG} )
-		echo "${groups}"
 		;;
 
 	s)
@@ -55,15 +53,23 @@ if [[ -n $name && -n $specifiedshell ]]; then
 	cp -r /etc/skel/. /home/$name
 	chown $name:$name /home/$name
 	echo "$name:!*:::::::" >> /etc/shadow
-	
-fi
-#	for i in ${groups[@]}; do
-#		echo "$i"
-#		
-#passwd $name
-	
 
+	for i in ${groups[@]}; do
+		groupline=$(cat /etc/group | grep -w "$i:x")
+		command=$(cat /etc/group | grep -w "$i:x" | awk -F'[ :]' '{print $4}')
+		if [[ $command ]]; then
+			newline=$(sed "s/$/,${name}/" <<< $groupline)
+			sed -i "s/${groupline}/${newline}/g" /etc/group
+		else
+			nofirstuser=$(sed "s/$/${name}/" <<< $groupline)
+			sed -i "s/${groupline}/${nofirstuser}/g" /etc/group
+		fi
+	done	
 passwd $name
+fi
+
+
+
 
 
 
