@@ -53,6 +53,8 @@ for i in ${fullpath[@]}; do
 	if [[ $i == /home/$1/config-files/bin/* ]]; then
 
 		#make a symlink which is the ln -s. -s makes the the symbolic link. the iterate is the path we are making it from and the path we are making it to is listed beside it. basename takes the lastname of the path specified and we are giving it the iterate so it takes the last part and makes a symbolic link.
+		# REFERNCE: https://bbs.archlinux.org/viewtopic.php?id=42284 
+		# https://www.cyberciti.biz/faq/bash-get-basename-of-filename-or-directory-name/
 		ln -s $i /home/$1/bin/$(basename $i)
 
 	elif [[ $i == /home/$1/config-files/home/* ]]; then
