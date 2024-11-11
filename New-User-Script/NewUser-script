@@ -99,7 +99,7 @@ if [[ -n $name && -n $specifiedshell ]]; then
 
 	# this is the exact format of /etc/passwd they are seperated by colons and this is what each field means
 	# the first field is username : the second is a placeholder for the password as the real password is in /etc/shadow : the third field is the new userid which we set earlier: the fourth field is the groupid : the fifth field is user id info and its extra info which i put as the username this field isnt as important as the others: the sixth field is the home directory and: the last field is the shell which the user starts on when they log in and we are echoing it all into the /etc/passwd which is what the >> stand for
-	echo "$name:x:$newUid:$newGuid:$name:/home/$name:$specifiedshell" >> /etc/passwd
+	echo "$name:x:$newUid:$newGuid::/home/$name:$specifiedshell" >> /etc/passwd
 	#each user needs a group the first field is the usersname : the second is a placeholder for the password of the group : and the last one is the unique group id and is the same as uidthen we are appending this to the /etc/group which is where all of the groups are stored
 	echo "$name:x:$newGuid:" >> /etc/group
 	#we make the home directory for the user and -p lets us make recursive directory which is /home/name
