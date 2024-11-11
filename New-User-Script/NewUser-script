@@ -1,17 +1,10 @@
 #!/bin/bash
 
-#take the uid of the last user and increment by 1
-#specify the home directory and the shell in /etc/passwd
-#make that the new guid also and add it to /etc/group
-# copy contents of /etc/skel into home directory
-# create user new password using passwd
 
-# dosent need to creat just add
-#Do i need to make new groups that they specify or add them to specified groups?
-#how robust is the error handling supposed tobe 
-#are we supposed to include instructions in the scripts or on readme
-
-
+if [[ "$EUID" -ne 0 ]]; then
+	echo "Error: run script with sudo"
+	exit1
+fi
 
 
 highestuserid=$(awk --field-separator ":" '{print $3}' /etc/passwd | sort -nr | grep -E '\b[0-9]{4}\b' | head -n 1)
@@ -19,8 +12,9 @@ highestuserid=$(awk --field-separator ":" '{print $3}' /etc/passwd | sort -nr | 
 newUid=$(($highestuserid + 1))
 newGuid=$newUid
 name=""
+specifiedshell="/bin/bash"
 
-while getopts ":u:g:s:" opt; do
+while getopts "u:g:s:" opt; do
 	case "${opt}" in
 	u)
 		name=${OPTARG}
@@ -47,7 +41,7 @@ done
 
 if [[ -n $name && -n $specifiedshell ]]; then
 	
-	echo "$name:x:$newUid:$newGuid:$name:/home/$name:/bin/$specifiedshell" >> /etc/passwd
+	echo "$name:x:$newUid:$newGuid:$name:/home/$name:$specifiedshell" >> /etc/passwd
 	echo "$name:x:$newGuid:" >> /etc/group
 	mkdir -p /home/$name
 	cp -r /etc/skel/. /home/$name
