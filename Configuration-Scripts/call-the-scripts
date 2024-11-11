@@ -6,8 +6,17 @@
 #this is a variable user which is an empty string and which the name of the user will be stored to
 user=""
 
-
+#EUID is effective user id and changes to the root users when sudo is run. if the command is run without sudo the uid which is not equal to 0 then echo error and exit 1
+#https://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
+#https://superuser.com/questions/1696909/what-is-the-meaning-of-using-euidif-ruid-and-euid-of-a-process-is-1000-0-and-i
+if [[ "$EUID" -ne 0 ]]; then
+	echo "Error: run the script with sudo"
+	exit1
+fi
+#https://kodekloud.com/blog/bash-getopts/
+#while loop using getopts, getopts is a shell commands used to parse command line options and arguments, the "im:" means those are the flags which will be available to run and the colon after the m indicates that an argument is expected after the flag. the opt is a variable that the option gets assigned to
 while getopts "im:" opt; do
+	#this is a case statement which matches the opt to the options below
 	case "${opt}" in
 #This is the flag -i and when this flag is called then the install-Userdef-script will run the ./ represents the script in the same directory as the two other scripts should not be in a different directory
 	i)
@@ -26,9 +35,8 @@ while getopts "im:" opt; do
 		echo "Error: run -m with an argument"
 		exit 1
 		;;
-# this is a placeholder for any other single letter so if a flag which isnt an option hers run here then this option will run and the script will terminate
+# this is a placeholder for any other single letter so if a flag which isnt an option here runs here then this option will run and the script will terminate
 	?)
-		#what does this do?
 		echo "Error: that flag does not exist"
 		exit 1
 		;;
