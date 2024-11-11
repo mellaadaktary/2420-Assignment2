@@ -1,39 +1,56 @@
 #!/bin/bash
 
-
+# this is checking if sudo is used to run this script if its not then exit the script
+# explained in detail in call-the-scripts
 if [[ "$EUID" -ne 0 ]]; then
 	echo "Error: run script with sudo"
 	exit 1
 fi
 
-
+# awk is a text finder in here i am using --field-separator to seperate the lines with the colon and printing the third index from the file /etc/passwd
+# we pipe it into sort and use -n which is numeric and -r for reverse putting the highest number at the top
+# we are piping it into grep with -E which stands for extended regular expression and only looking for number which are 4 digits no less no more which is what the two \ b's are for they are borders
+# then finally we pipe it into head -n is for number and we are specifying to only give us the highest number at the top that is 4 digits
+# this ultimately is used to give us the latest userid so we can increment it by 1 when we make the new one
+# https://opensource.com/article/20/9/awk-ebook
+# https://man7.org/linux/man-pages/man1/sort.1.html
 highestuserid=$(awk --field-separator ":" '{print $3}' /etc/passwd | sort -nr | grep -E '\b[0-9]{4}\b' | head -n 1)
 
+
+#we are taking the above variable and incrementing by 1 inside a math expantion then assinging it to newUid
 newUid=$(($highestuserid + 1))
+# setting the Guid to the same as uid
 newGuid=$newUid
+# empty name variable which will be filled later
 name=""
+#default argument incase nothing is provided so we have a shell
 specifiedshell="/bin/bash"
 
 
-
+#while loop with getopts which expects -u -s -g with arguments for them all
 while getopts "u:g:s:" opt; do
 	case "${opt}" in
 	u)
+		# add the user to this variable which they provide after running -u
 		name=${OPTARG}
 		;;
-	g)
+	g)	
+		# add the string they provide to an array called groups
 		groups=( ${OPTARG} )
 		;;
 
-	s)
+	s)	
+		#specified shell is reassigned here if something is provided
 		specifiedshell=${OPTARG}
 		;;
 		
 	:)
+		#these are explained in call-the-scripts
 		echo "Error:this flag requires an argument"
 		exit 1
 		;;
 	?)
+		#these are explained in call-the-scripts
 		echo "Error: this option does not exist
 		-u <username> (example: -u arch)
 		-g <"groups"> (example: -g 'wheel adm group3')
@@ -44,11 +61,14 @@ while getopts "u:g:s:" opt; do
 	esac
 done
 
+# we are reading passwd and trying to pull the name they provided with grep if it return something then this will run stating that this name already exists and to provide a unique one
 if [[ $(cat /etc/passwd | grep $name) ]]; then
 	echo "Error: This user already exists please provide a unique user"
 	exit 1
 fi
 
+#this checks if no arguments were passed since they script needs arguments inorder to work
+# the hash and dollar sign return the length of the paramteres and if its 0 then no arguments were giving resulting in exit 1
 if [[ $# -eq 0 ]]; then
 	echo "Error: no options or arguments were passed
         -u <username> (example: -u arch)
@@ -58,13 +78,14 @@ if [[ $# -eq 0 ]]; then
 fi
 
 
-
+# we are reading the etc/shell and greping the specified shell they give us and if it dosent exist then we cant set it since they would have to download it first, we then exit 1
 if [[ ! $(cat /etc/shells | grep $specifiedshell) ]]; then
 	echo "this shell cannot be set it is not in the /etc/shells file to set your shell to $specifiedshell download it first"
 	exit 1
 fi
 
 
+# we loop through the array of groups and for every single group they provide we check if the group exists in /etc/group if it dosent then we are exiting and telling them that the group dosent exist
 for i in ${groups[@]}; do
 	if [[ ! $(cat /etc/group | grep $i) ]]; then
 		echo "Error: one of these groups dont exist run the script again with existing groups"
@@ -73,29 +94,54 @@ for i in ${groups[@]}; do
 done
 
 
-
+# when both name and shell is not empty so if its a filled string which is what -n is used for and the two & stands for and then we start the creation process
 if [[ -n $name && -n $specifiedshell ]]; then
-	
-	echo "$name:x:$newUid:$newGuid:$name:/home/$name:$specifiedshell" >> /etc/passwd
-	echo "$name:x:$newGuid:" >> /etc/group
-	mkdir -p /home/$name
-	cp -r /etc/skel/. /home/$name
-	chown $name:$name /home/$name
-	echo "$name:!*:::::::" >> /etc/shadow
 
+	# this is the exact format of /etc/passwd they are seperated by colons and this is what each field means
+	# the first field is username : the second is a placeholder for the password as the real password is in /etc/shadow : the third field is the new userid which we set earlier: the fourth field is the groupid : the fifth field is user id info and its extra info which i put as the username this field isnt as important as the others: the sixth field is the home directory and: the last field is the shell which the user starts on when they log in and we are echoing it all into the /etc/passwd which is what the >> stand for
+	echo "$name:x:$newUid:$newGuid:$name:/home/$name:$specifiedshell" >> /etc/passwd
+	#each user needs a group the first field is the usersname : the second is a placeholder for the password of the group : and the last one is the unique group id and is the same as uidthen we are appending this to the /etc/group which is where all of the groups are stored
+	echo "$name:x:$newGuid:" >> /etc/group
+	#we make the home directory for the user and -p lets us make recursive directory which is /home/name
+	mkdir -p /home/$name
+	# we are copying the contents of /etc/skel which holds all the default home content
+	# the . signifies that we are copying the content and not the directory to the directory we made above
+	# https://askubuntu.com/questions/86822/how-can-i-copy-the-contents-of-a-folder-to-another-folder-in-a-different-directo
+	cp -r /etc/skel/. /home/$name
+
+	# giving the user we just created ownership of their home directory
+	chown $name:$name /home/$name
+	# adding the user to etc shadow as a placeholder because when we run passwd it changes these field anyway etc shadow is where the hashed passwords are stored
+	# https://linuxize.com/post/etc-shadow-file/
+	echo "$name:!*:::::::" >> /etc/shadow
+	
+	# iterating through the groups
 	for i in ${groups[@]}; do
+		#reading the group file and greping the whole word -w of the group which is the iterate with a colon and x placeholder, this is to make sure the group exists in the file
 		groupline=$(cat /etc/group | grep -w "$i:x")
+		# then we do the samething as above but pass it to an awk which will divide everything by the colon and print the 4 index, this is to see if a user is already appened to a group or its empty -F is for field seperator and we are seperating it by : 
+		# https://www.nixcraft.com/t/linux-append-text-to-end-of-line/1838
 		command=$(cat /etc/group | grep -w "$i:x" | awk -F'[ :]' '{print $4}')
+		
+		#if the command variable above does return something it means that someone there is someone else in the group and it isnt gonna be the first one so it needs to inlcude a comma
 		if [[ $command ]]; then
+			#sed is a text editor that we are using to replace the current line that get from groupline and add the user with a comma 
+			# the dollarsign specifies the end of the line and we are adding a comma and username to it
+			# https://www.gnu.org/software/sed/manual/sed.html
 			newline=$(sed "s/$/,${name}/" <<< $groupline)
+			# -i stands for write in place and now we are replacing the old line without the user and adding the user in it inside /etc/group
 			sed -i "s/${groupline}/${newline}/g" /etc/group
 		else
+			#we are doing the same as the top but there is no comma here which means that there is no other memeber of the group and we are the first
+			# https://www.nixcraft.com/t/linux-append-text-to-end-of-line/1838/3
 			nofirstuser=$(sed "s/$/${name}/" <<< $groupline)
 			sed -i "s/${groupline}/${nofirstuser}/g" /etc/group
 		fi
-	done	
+	done
+#we use the passwd command to set a password for the user now and echo a successful creation letting them know it went successfully
 passwd $name
 echo "successful: User $name is created"
+#if a user and shell werent specified this is a alst resort to catch them and tell them its an error
 else
 	echo "Error: provide a username and specifiedshell"
 fi
