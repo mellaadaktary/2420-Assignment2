@@ -1,21 +1,21 @@
 #!/bin/bash
 
 
-#now it only catches those two and also creates them a directory up
-#dosent catch kakrc and tmux.conf
-#This script clones the confirguration files make sure the user includes git
+#This script makes a directory called config-files and clones a repository to it then it makes symbolic links to all those directory to different places like bin .confg and .bashrc
 
+
+#this is the path to the config-files inside of a list. we are using absolute path so when sudo is run then we are not upgrading to the root user and staying as the specified user, the /*/* means include everything inside the next two directory levels
 fullpath=( /home/$1/config-files/*/* )
 
-# give path instead of array
-
+#we are using $ 1 which is a parameter and if it return empty which is what the -z indicates, then echo to the user that they have to run the script with their name and let them see an example. the exit 1 indicate terminate the script so it dosent continue and they have to run it again properly this time
 if [[ -z $1 ]]; then
 	echo "error: run this script with your username"
+	echo "./make-symlink-script <your-username>"
 exit 1
 fi
 
 
-
+# we are using pacman -Q to see the pacakges the user has installed and giving the output into the input of grep which takes a keyword from that output which is git and returns it to us, if the command substitution returns false which is what the ! indicates then echo git is needed to run this script and exit 1
 if [[ ! $(pacman -Q | grep git) ]]; then
 	echo "git is needed to run this script"
 exit 1
@@ -23,9 +23,9 @@ fi
 
 
 
-#an if statement that checks if config-files dir exists
+#an if statement that checks if config-files dir exists -d tell us if the directory exists and the rest is the path of the directory
 if [[ -d /home/$1/config-files ]]; then
-	#clones the git repo to the config-files dir
+	#clones the git repo to the config-files dir, we are running git clone and giving it the url of the repository and specifying where we want the repository to be stored in.
 	git clone https://gitlab.com/cit2420/2420-as2-starting-files.git /home/$1/config-files
 else
 	#make the directory when it dosent exist then run git clone in the directory
@@ -34,28 +34,36 @@ else
 	echo "config-files created and repo has been cloned to it"
 fi
 
-
+#this is an if statement which checks if the user does not have a bin directory, if they dont then it runs and makes then a directory by running the mkdir command and then print to the user letting them know that you made one
 if [[ ! -d /home/$1/bin ]]; then
 	mkdir /home/$1/bin
 	echo "made a bin directory"
 fi
 
-
+#this does the same thing as the above if statement just with the .config directory instead
 if [[ ! -d /home/$1/.config ]]; then
 	mkdir /home/$1/.config
 	echo "made a .config directory"
 fi
 
-
+#This is a for loop which loops through the path array listed at the top
 for i in ${fullpath[@]}; do
-	echo "$i"
+
+	#if the path we are looping equals to this one then 
 	if [[ $i == /home/$1/config-files/bin/* ]]; then
+
+		#make a symlink which is the ln -s. -s makes the the symbolic link. the iterate is the path we are making it from and the path we are making it to is listed beside it. basename takes the lastname of the path specified and we are giving it the iterate so it takes the last part and makes a symbolic link.
 		ln -s $i /home/$1/bin/$(basename $i)
+
 	elif [[ $i == /home/$1/config-files/home/* ]]; then
+		#this does the same thing as the one above except for /home and we are replacing the bashrc for them which is why we use -f flag also that stands for force and will replace the current bashrc
 		ln -sf $i /home/$1/.$(basename $i)
+
 	elif [[ $i == /home/$1/config-files/config/* ]]; then
+		#this does the same as the ones above
 		ln -s $i /home/$1/.config/$(basename $i)
 	else
+		#if any other path pops up then echo an error message to them and tell them that it dosent meey any matches 
 		echo "error: $i dosent meet any matches"
 	fi
 done
