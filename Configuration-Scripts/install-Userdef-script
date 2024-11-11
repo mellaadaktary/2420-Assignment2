@@ -21,8 +21,8 @@ for i in ${package[@]}; do
 
 	#otherwise install the package
 	else
-		# install the package
-		pacman -S $i
+		# install the package -- no confirm means not ask for y and n since we are autoaming a package install
+		pacman -S --noconfirm $i
 	fi
 done
 
