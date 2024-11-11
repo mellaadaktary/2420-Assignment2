@@ -162,6 +162,10 @@ chmod u+x make-symlink-script
 ```bash
 sudo ./make-symlink-script
 ```
+5. specify your username like so:
+```bash
+sudo ./make-symlink-script arch
+```
 
 This script will make 2 directories if they already don't exist and 1 bashrc file.
 
